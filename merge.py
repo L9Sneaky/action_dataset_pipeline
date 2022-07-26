@@ -10,19 +10,22 @@ pretraincsv_path = r'Dataset\outputs\train.csv'
 df = pd.read_csv(pretraincsv_path, sep=',')
 df.columns=(['videoID', 'frame', 'x1', 'y1', 'x2', 'y2', 'id'])
 videoIDs = df['videoID'].unique()
+
+
 # %%
 input = r'Dataset\metadata_in'
 output = r'Dataset\metadata_out'
 meta = os.listdir(input)
-
 for i in range(len(meta)):
     metadata = input+ '/' + meta[i]
     savejson = output+ '/' + meta[i]
     df3 = pd.read_json(metadata)
-
+    name = meta[i].split('.')[0].split('_')
+    newname = name[0]+'_'+name[1]+'_'+name[2]
     #merge yolov5/strongsort with via metadata
     # generate indexs
-    vidx = df['videoID']==videoIDs[i]
+    vidx = df['videoID']==newname
+    print('generate indexs')
     inx = []
     framenum = 1
     for a in range(len(df[vidx])):
@@ -30,6 +33,7 @@ for i in range(len(meta)):
             bb = str(a)+'_'+(8-len(str(framenum)))*'0'+ str(j)
             inx.append(bb)
         framenum += 1
+    print('indexs: '+ str(len(inx)))
 
     vid = [] #frame
     flg = []
@@ -37,6 +41,7 @@ for i in range(len(meta)):
     xy = []
     av = []
     for i in range(len(df[vidx])):
+        print(newname + ' frame: '+ str(i))
         x = int(df[vidx].iloc[i]['x1'])
         y = int(df[vidx].iloc[i]['y1'])
         w = int(df[vidx].iloc[i]['x2'])
@@ -61,3 +66,4 @@ for i in range(len(meta)):
 
     with open(savejson, 'w') as fp:
         json.dump(data, fp)
+print('done merging')
